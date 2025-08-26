@@ -1,7 +1,8 @@
-use std::{fmt::Display, time::Duration};
+use std::{fmt::{Debug, Display}, str::FromStr};
 
-use iced::{widget::{ button, column, pick_list, row, text_editor::{Content}, text_input, Button, Row, TextEditor, Theme}, Task};
+use iced::{widget::{ button, column, pick_list, progress_bar, row, text_editor::Edit, text_input, Button, Theme}, Length, Task};
 use iced::widget::text_editor;
+use reqwest::{self, header::HeaderValue};
 
 pub fn main() -> iced::Result {
     iced::application("APIKIT", AppState::update, AppState::view)
@@ -14,7 +15,8 @@ struct AppState {
     loading: bool,
     screen: Screen,
     http_method: HttpMethod,
-    response: text_editor::Content
+    response: text_editor::Content,
+    request: text_editor::Content
 }
 
 impl Default for AppState {
@@ -24,7 +26,8 @@ impl Default for AppState {
             screen: Screen::Main,
             http_method: HttpMethod::Get,
             loading: false,
-            response: Content::new(),
+            response: text_editor::Content::new(),
+            request: text_editor::Content::new(),
         }
     }
 }
@@ -60,7 +63,9 @@ enum Message {
     Navigate(Screen),
     UpdateUrl(String),
     UpdateHttpMethod(HttpMethod),
-    Done,
+    Done(Result<String, String>),
+    RequestUpdate(text_editor::Action),
+    ResponseAction(text_editor::Action),
     DoNothing
 }
 
@@ -69,14 +74,48 @@ impl AppState {
         match event {
             Message::Request => {
                 self.loading = true;
-                return Task::perform(tokio::time::sleep(Duration::from_secs(2)), |_| {
-                    Message::Done
-                });
+                let url = self.url.clone();
+                let method : reqwest::Method = match self.http_method {
+                    HttpMethod::Get => reqwest::Method::GET,
+                    HttpMethod::Post => reqwest::Method::POST,
+                    HttpMethod::Put => reqwest::Method::PUT,
+                    HttpMethod::Delete => reqwest::Method::DELETE,
+                };
+                return Task::perform(async move {
+                    let client = reqwest::Client::new();
+                    let mut request = reqwest::Request::new(method, reqwest::Url::from_str(&url).unwrap());
+                    request.headers_mut().append("Content-Type", HeaderValue::from_str("application/json").unwrap());
+                    match client.execute(request).await {
+                        Ok(response) => {
+                            match response.text().await {
+                                Ok(text) => Message::Done(Ok(text)),
+                                Err(err) => Message::Done(Err(format!("Failed to read response: {}", err))),
+                            }
+                        },
+                        Err(err) => Message::Done(Err(format!("Request failed: {}", err))),
+                    }
+                }, |msg| msg);
             }
             Message::Navigate(screen) => self.screen = screen,
             Message::UpdateUrl(url) => self.url = url,
             Message::UpdateHttpMethod(http_method) => self.http_method = http_method,
-            Message::Done => self.loading = false,
+            Message::RequestUpdate(action) => {
+                self.request.perform(action);
+            },
+            Message::ResponseAction(action) => {
+                self.response.perform(action);
+            },
+            Message::Done(result) => {
+                self.loading = false;
+                match result {
+                    Ok(text) => {
+                        self.response = text_editor::Content::with_text(&text);
+                    },
+                    Err(error) => {
+                        self.response = text_editor::Content::with_text(&error);
+                    }
+                }
+            },
             Message::DoNothing => {}
         }
         Task::none()
@@ -97,18 +136,28 @@ impl AppState {
         };
 
         column![
+            progress_bar(0.0..=100.0, 20.0).height(4),
             row![
                 pick_list(methods, Some(self.http_method), |method| {
                     Message::UpdateHttpMethod(method)
                 }),
                 text_input("enter url", self.url.as_ref()).on_input(|s| Message::UpdateUrl(s)),
                 send_button
-            ].spacing(10).padding(10).into(),
-
-            text_editor(&self.response)
-            .placeholder("reqeust body")
-            .into()
+            ].spacing(10),
+            
+            row![
+                text_editor(&self.request)
+                    .placeholder("reqeust body")
+                    .height(Length::Fill)
+                    .on_action(|action| Message::RequestUpdate(action)),
+                text_editor(&self.response)
+                    .placeholder("reqeust body")
+                    .height(Length::Fill)
+                    .on_action(|action| Message::ResponseAction(action)),
+            ].spacing(10)
         ]
+        .spacing(10)
+        .padding(10)
         .into()
     }
 }
