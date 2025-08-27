@@ -18,7 +18,6 @@ pub fn main() -> iced::Result {
 struct AppState {
     url: String,
     loading: bool,
-    screen: Screen,
     http_method: HttpMethod,
     response: text_editor::Content,
     request: text_editor::Content,
@@ -28,19 +27,12 @@ impl Default for AppState {
     fn default() -> Self {
         Self {
             url: "".to_owned(),
-            screen: Screen::Main,
             http_method: HttpMethod::Get,
             loading: false,
             response: text_editor::Content::new(),
             request: text_editor::Content::new(),
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Screen {
-    Main,
-    Settings,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -65,7 +57,6 @@ impl Display for HttpMethod {
 #[derive(Debug, Clone)]
 enum Message {
     Request,
-    Navigate(Screen),
     UpdateUrl(String),
     UpdateHttpMethod(HttpMethod),
     Done(Result<String, String>),
@@ -107,7 +98,6 @@ impl AppState {
                     |msg| msg,
                 );
             }
-            Message::Navigate(screen) => self.screen = screen,
             Message::UpdateUrl(url) => self.url = url,
             Message::UpdateHttpMethod(http_method) => self.http_method = http_method,
             Message::RequestUpdate(action) => {
@@ -127,12 +117,11 @@ impl AppState {
                     }
                 }
             }
-            Message::DoNothing => {}
         }
         Task::none()
     }
 
-    fn view(&self) -> iced::Element<Message> {
+    fn view(&self) -> iced::Element<'_, Message> {
         let methods = vec![
             HttpMethod::Get,
             HttpMethod::Post,
