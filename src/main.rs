@@ -3,6 +3,7 @@ use std::{
     str::FromStr,
 };
 
+use iced::Font;
 use iced::widget::{
     Button, Theme, button, column, pick_list, progress_bar, row, text_editor, text_input,
 };
@@ -12,6 +13,8 @@ use reqwest::{self, header::HeaderValue};
 pub fn main() -> iced::Result {
     iced::application("APIKIT", AppState::update, AppState::view)
         .theme(|_| Theme::TokyoNight)
+        .font(include_bytes!("JetBrainsMono-Regular.ttf"))
+        .default_font(Font::with_name("JetBrains Mono"))
         .run()
 }
 
@@ -153,6 +156,7 @@ impl AppState {
                 text_editor(&self.response)
                     .placeholder("reqeust body")
                     .height(Length::Fill)
+                    .highlight("json", iced::highlighter::Theme::SolarizedDark)
                     .on_action(|action| Message::ResponseAction(action)),
             ]
             .spacing(10)
