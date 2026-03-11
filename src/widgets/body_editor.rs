@@ -39,4 +39,8 @@ impl BodyEditor {
     pub fn text(&self) -> String {
         self.content.text()
     }
+
+    pub fn set_text(&mut self, text: String) {
+        self.content = text_editor::Content::with_text(&text);
+    }
 }

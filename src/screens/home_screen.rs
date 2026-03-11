@@ -1,5 +1,6 @@
 use crate::http;
 use crate::widgets::body_editor::{self, BodyEditor};
+use crate::widgets::collections_panel::{self, CollectionsPanel};
 use crate::widgets::key_value_editor::{self, KeyValueEditor};
 use crate::widgets::response_viewer::{self, ResponseViewer};
 use crate::widgets::tab_bar;
@@ -8,6 +9,7 @@ use iced::widget::{column, container, horizontal_rule, progress_bar, row, text};
 use iced::{Element, Length, Padding, Task};
 
 pub struct HomeScreen {
+    collections_panel: CollectionsPanel,
     url_bar: UrlBar,
     params_editor: KeyValueEditor,
     headers_editor: KeyValueEditor,
@@ -19,6 +21,7 @@ pub struct HomeScreen {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    Collections(collections_panel::Message),
     UrlBar(url_bar::Message),
     Params(key_value_editor::Message),
     Headers(key_value_editor::Message),
@@ -38,6 +41,7 @@ pub enum RequestTab {
 impl Default for HomeScreen {
     fn default() -> Self {
         Self {
+            collections_panel: CollectionsPanel::default(),
             url_bar: UrlBar::default(),
             params_editor: KeyValueEditor::default(),
             headers_editor: KeyValueEditor::default(),
@@ -52,6 +56,51 @@ impl Default for HomeScreen {
 impl HomeScreen {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
+            Message::Collections(msg) => {
+                let should_save = matches!(msg, collections_panel::Message::SaveCurrent);
+                let should_load = matches!(msg, collections_panel::Message::SelectRequest(_, _));
+
+                self.collections_panel.update(msg);
+
+                if should_save {
+                    self.collections_panel.save_to_selected(
+                        &self.url_bar.url,
+                        self.url_bar.method,
+                        &self.headers_editor,
+                        &self.params_editor,
+                        {
+                            let body_text = self.body_editor.text();
+                            if body_text.trim().is_empty() {
+                                None
+                            } else {
+                                Some(body_text)
+                            }
+                        },
+                    );
+                }
+
+                if should_load {
+                    if let Some(req) = self.collections_panel.selected_request() {
+                        self.url_bar.url = req.url.clone();
+                        self.url_bar.method = req.method;
+                        self.headers_editor = KeyValueEditor {
+                            entries: if req.headers.is_empty() {
+                                vec![(String::new(), String::new())]
+                            } else {
+                                req.headers.clone()
+                            },
+                        };
+                        self.params_editor = KeyValueEditor {
+                            entries: if req.params.is_empty() {
+                                vec![(String::new(), String::new())]
+                            } else {
+                                req.params.clone()
+                            },
+                        };
+                        self.body_editor.set_text(req.body.clone().unwrap_or_default());
+                    }
+                }
+            }
             Message::UrlBar(msg) => {
                 if matches!(msg, url_bar::Message::Send) {
                     return self.send_request();
@@ -119,7 +168,7 @@ impl HomeScreen {
             progress_bar(0.0..=100.0, 0.0).height(2)
         };
 
-        column![
+        let editor = column![
             progress,
             container(self.url_bar.view().map(Message::UrlBar))
                 .padding(Padding::new(0.0).top(12.0).bottom(8.0).left(16.0).right(16.0)),
@@ -149,6 +198,13 @@ impl HomeScreen {
             .padding(Padding::new(0.0).top(8.0).bottom(12.0)),
         ]
         .spacing(0)
+        .width(Length::Fill);
+
+        row![
+            self.collections_panel.view().map(Message::Collections),
+            editor,
+        ]
+        .height(Length::Fill)
         .into()
     }
 }
