@@ -1,15 +1,15 @@
+mod config;
 mod http;
 mod screens;
 mod widgets;
 
-use iced::{Font, Size};
-use iced::widget::Theme;
-use iced::window::Settings;
 use crate::screens::app_screen::AppScreen;
+use iced::window::Settings;
+use iced::{Font, Size};
 
 pub fn main() -> iced::Result {
     iced::application("APIKIT", AppScreen::update, AppScreen::view)
-        .theme(|_| Theme::TokyoNight)
+        .theme(AppScreen::theme)
         .font(include_bytes!("JetBrainsMono-Regular.ttf"))
         .default_font(Font::with_name("JetBrains Mono"))
         .window(Settings {

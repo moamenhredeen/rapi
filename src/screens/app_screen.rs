@@ -1,3 +1,4 @@
+use crate::config::AppConfig;
 use crate::screens::environments_screen;
 use crate::screens::environments_screen::EnvironmentsScreen;
 use crate::screens::home_screen;
@@ -15,6 +16,7 @@ pub struct AppScreen {
     collections: HomeScreen,
     environments: EnvironmentsScreen,
     settings: SettingsScreen,
+    config: AppConfig,
     status_message: String,
 }
 
@@ -28,11 +30,14 @@ pub enum Message {
 
 impl Default for AppScreen {
     fn default() -> Self {
+        let config = AppConfig::load();
+        let settings = SettingsScreen::new(config.theme());
         Self {
             route: Route::Collections,
             collections: HomeScreen::default(),
             environments: EnvironmentsScreen::default(),
-            settings: SettingsScreen::default(),
+            settings,
+            config,
             status_message: "Ready".to_string(),
         }
     }
@@ -55,9 +60,15 @@ impl AppScreen {
             }
             Message::Settings(msg) => {
                 self.settings.update(msg);
+                self.config.set_theme(&self.settings.theme);
+                self.config.save();
                 Task::none()
             }
         }
+    }
+
+    pub fn theme(&self) -> iced::Theme {
+        self.config.theme()
     }
 
     pub fn view(&self) -> Element<'_, Message> {
