@@ -1,4 +1,4 @@
-# Settings Screen
+# Customizing Settings
 
 The Settings screen provides application preferences that persist across sessions.
 

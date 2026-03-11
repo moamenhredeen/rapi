@@ -1,12 +1,20 @@
 # Summary
 
-- [Introduction](./introduction.md)
-- [Architecture](./architecture.md)
-  - [Project Structure](./project-structure.md)
-  - [Composable Widgets](./composable-widgets.md)
-  - [Message Routing](./message-routing.md)
-- [Screens](./screens.md)
-  - [Collections](./screens-collections.md)
-  - [Environments](./screens-environments.md)
-  - [Settings](./screens-settings.md)
-- [Configuration](./configuration.md)
+# Guides
+
+- [Introduction](./guides/introduction.md)
+- [Sending Requests](./guides/collections.md)
+- [Managing Environments](./guides/environments.md)
+- [Customizing Settings](./guides/settings.md)
+
+# Reference
+
+- [Screens Overview](./reference/screens.md)
+- [Configuration File](./reference/configuration.md)
+
+# Developer
+
+- [Architecture](./developer/architecture.md)
+- [Project Structure](./developer/project-structure.md)
+- [Composable Widgets](./developer/composable-widgets.md)
+- [Message Routing](./developer/message-routing.md)
