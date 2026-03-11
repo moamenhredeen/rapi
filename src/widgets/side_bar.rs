@@ -1,6 +1,7 @@
 use iced::widget::{ Text, button, row, text};
 use iced::{Center, Element, Fill, Length, Shrink, border};
 
+#[allow(dead_code)]
 pub fn header<'a, Message: Clone + 'a>(
     title: impl text::IntoFragment<'a>,
     icon: Option<(Text<'a>, Message)>,

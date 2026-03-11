@@ -1,33 +1,27 @@
-use iced::{Element, Task};
-use crate::screens::contracts::Screen;
-use crate::screens::route::Route;
+use iced::widget::text;
+use iced::Element;
 
-pub struct SettingsScreen {
-
-}
+pub struct SettingsScreen;
 
 #[derive(Debug, Clone)]
 pub enum Message {
     UpdateTheme,
-    Navigate(Route)
 }
 
 impl Default for SettingsScreen {
     fn default() -> Self {
-        Self {}
+        Self
     }
 }
 
-impl Screen<Message> for SettingsScreen {
-
-    fn update(&mut self, event: Message) -> Task<Message> {
+impl SettingsScreen {
+    pub fn update(&mut self, event: Message) {
         match event {
-            Message::UpdateTheme => Task::none(),
-            Message::Navigate(screen) => Task::none(),
+            Message::UpdateTheme => {}
         }
     }
 
-    fn view(&self) -> Element<'_, Message> {
-        "hello world".into()
+    pub fn view(&self) -> Element<'_, Message> {
+        text("Settings — coming soon").into()
     }
 }

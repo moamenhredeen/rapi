@@ -1,6 +1,5 @@
-use iced::{Background, Element, Color, Length};
 use iced::widget::{container, row, text};
-use iced::widget::container::background;
+use iced::{Element, Length};
 
 pub fn status_bar<'a, Message: Clone + 'a>(
     message: impl text::IntoFragment<'a>,
@@ -8,8 +7,12 @@ pub fn status_bar<'a, Message: Clone + 'a>(
     container(
         row![text("Message"), text(message)]
             .spacing(5)
-            .padding(5)
-    ).style(|_| background(Background::Color(Color::new(0.2, 0.0, 0.2, 1.0))))
-        .width(Length::Fill)
-        .into()
+            .padding(5),
+    )
+    .style(|theme: &iced::Theme| {
+        let palette = theme.extended_palette();
+        container::background(palette.background.strong.color)
+    })
+    .width(Length::Fill)
+    .into()
 }

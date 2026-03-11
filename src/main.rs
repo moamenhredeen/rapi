@@ -1,3 +1,4 @@
+mod http;
 mod screens;
 mod widgets;
 
@@ -5,7 +6,6 @@ use iced::{Font, Size};
 use iced::widget::Theme;
 use iced::window::Settings;
 use crate::screens::app_screen::AppScreen;
-use crate::screens::contracts::Screen;
 
 pub fn main() -> iced::Result {
     iced::application("APIKIT", AppScreen::update, AppScreen::view)

@@ -1,5 +1,4 @@
 
-pub mod contracts;
 pub mod route;
 
 pub mod app_screen;
