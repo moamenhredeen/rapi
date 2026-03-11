@@ -1,0 +1,10 @@
+module = "icon"
+
+[glyphs]
+archive = "fontawesome-file-archive"
+globe = "fontawesome-globe"
+cog = "fontawesome-cog"
+cancel = "fontawesome-cancel"
+trash = "fontawesome-trash"
+plus = "fontawesome-plus"
+paper_plane = "fontawesome-paper-plane"

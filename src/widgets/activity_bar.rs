@@ -1,9 +1,9 @@
-use iced::widget::{button, column, container, text, tooltip};
+use iced::widget::{button, column, container, tooltip, Text};
 use iced::{border, Center, Element, Length};
 
 pub struct ActivityBarItem<Route> {
     pub route: Route,
-    pub icon: &'static str,
+    pub icon: fn() -> Text<'static>,
     pub label: &'static str,
 }
 
@@ -14,7 +14,7 @@ pub fn activity_bar<'a, Route, M>(
 ) -> Element<'a, M>
 where
     Route: Clone + PartialEq + 'a,
-    M: Clone + 'a,
+    M: Clone + 'static,
 {
     let buttons: Vec<Element<'a, M>> = items
         .into_iter()
@@ -24,7 +24,7 @@ where
 
             tooltip(
                 button(
-                    text(item.icon)
+                    (item.icon)()
                         .size(20)
                         .center()
                         .width(Length::Fill),

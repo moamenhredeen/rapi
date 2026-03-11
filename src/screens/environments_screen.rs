@@ -94,7 +94,7 @@ impl EnvironmentsScreen {
                 .on_input(Message::UpdateNewEnvName)
                 .on_submit(Message::AddEnvironment)
                 .width(Length::FillPortion(2)),
-            button(text("+").center().width(Length::Fill))
+            button(crate::icon::plus().center().width(Length::Fill))
                 .width(36)
                 .style(|theme: &iced::Theme, status| {
                     let palette = theme.extended_palette();
@@ -106,7 +106,7 @@ impl EnvironmentsScreen {
                     }
                 })
                 .on_press(Message::AddEnvironment),
-            button(text("🗑").center().width(Length::Fill))
+            button(crate::icon::trash().center().width(Length::Fill))
                 .width(36)
                 .style(button::danger)
                 .on_press(Message::RemoveEnvironment),

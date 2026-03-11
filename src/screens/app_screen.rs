@@ -75,17 +75,17 @@ impl AppScreen {
         let nav_items = vec![
             ActivityBarItem {
                 route: Route::Collections,
-                icon: "📦",
+                icon: crate::icon::archive,
                 label: "Collections",
             },
             ActivityBarItem {
                 route: Route::Environments,
-                icon: "🌍",
+                icon: crate::icon::globe,
                 label: "Environments",
             },
             ActivityBarItem {
                 route: Route::Settings,
-                icon: "⚙",
+                icon: crate::icon::cog,
                 label: "Settings",
             },
         ];

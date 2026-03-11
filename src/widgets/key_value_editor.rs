@@ -61,7 +61,7 @@ impl KeyValueEditor {
                         .on_input(move |v| Message::UpdateValue(idx, v))
                         .width(Length::FillPortion(1))
                         .size(13),
-                    button(text("✕").size(12).center().width(Length::Fill))
+                    button(crate::icon::cancel().size(12).center().width(Length::Fill))
                         .width(28)
                         .height(28)
                         .on_press(Message::Remove(idx))
