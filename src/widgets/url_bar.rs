@@ -1,5 +1,5 @@
 use iced::widget::{button, pick_list, row, text_input};
-use iced::Element;
+use iced::{border, Element};
 
 use crate::http::method::HttpMethod;
 
@@ -31,15 +31,36 @@ impl UrlBar {
         match message {
             Message::UpdateUrl(url) => self.url = url,
             Message::UpdateMethod(method) => self.method = method,
-            Message::Send => {} // handled by parent
+            Message::Send => {}
         }
     }
 
     pub fn view(&self) -> Element<'_, Message> {
         let send_button = if self.loading {
-            button("Loading ...").width(100)
+            button("Sending...")
+                .width(100)
+                .style(|theme: &iced::Theme, status| {
+                    let palette = theme.extended_palette();
+                    button::Style {
+                        background: Some(palette.primary.weak.color.into()),
+                        text_color: palette.primary.weak.text,
+                        border: border::rounded(6),
+                        ..button::primary(theme, status)
+                    }
+                })
         } else {
-            button("Send").width(100).on_press(Message::Send)
+            button("Send")
+                .width(100)
+                .on_press(Message::Send)
+                .style(|theme: &iced::Theme, status| {
+                    let palette = theme.extended_palette();
+                    button::Style {
+                        background: Some(palette.success.base.color.into()),
+                        text_color: palette.success.base.text,
+                        border: border::rounded(6),
+                        ..button::primary(theme, status)
+                    }
+                })
         };
 
         row![
@@ -47,12 +68,14 @@ impl UrlBar {
                 HttpMethod::ALL,
                 Some(self.method),
                 Message::UpdateMethod,
-            ),
+            )
+            .width(100),
             text_input("Enter URL...", &self.url)
-                .on_input(Message::UpdateUrl),
+                .on_input(Message::UpdateUrl)
+                .on_submit(Message::Send),
             send_button,
         ]
-        .spacing(10)
+        .spacing(8)
         .into()
     }
 }

@@ -1,5 +1,5 @@
 use iced::widget::{column, container, row, text, text_editor};
-use iced::{Element, Length};
+use iced::{border, Element, Length, Padding};
 
 use crate::http::response::Response;
 
@@ -42,32 +42,55 @@ impl ResponseViewer {
 
     pub fn update(&mut self, message: Message) {
         match message {
-            // Read-only: ignore edit actions
             Message::EditorAction(_) => {}
         }
     }
 
     pub fn view(&self) -> Element<'_, Message> {
         let status_line: Element<'_, Message> = if let Some(ref resp) = self.response {
-            let status_color = if resp.status_code < 300 {
-                iced::Color::from_rgb(0.2, 0.8, 0.2)
+            let (status_color, bg_color) = if resp.status_code < 300 {
+                (
+                    iced::Color::from_rgb(0.15, 0.75, 0.35),
+                    iced::Color::from_rgba(0.15, 0.75, 0.35, 0.15),
+                )
             } else if resp.status_code < 400 {
-                iced::Color::from_rgb(0.8, 0.8, 0.2)
+                (
+                    iced::Color::from_rgb(0.85, 0.65, 0.1),
+                    iced::Color::from_rgba(0.85, 0.65, 0.1, 0.15),
+                )
             } else {
-                iced::Color::from_rgb(0.8, 0.2, 0.2)
+                (
+                    iced::Color::from_rgb(0.85, 0.25, 0.25),
+                    iced::Color::from_rgba(0.85, 0.25, 0.25, 0.15),
+                )
             };
 
             row![
-                text(format!("{}", resp.status_code)).color(status_color),
-                text(format!("  {}ms", resp.duration.as_millis())),
+                container(text(format!("{}", resp.status_code)).size(13).color(status_color))
+                    .padding([3, 8])
+                    .style(move |_theme: &iced::Theme| container::Style {
+                        background: Some(bg_color.into()),
+                        border: border::rounded(4),
+                        ..container::Style::default()
+                    }),
+                text(format!("{}ms", resp.duration.as_millis())).size(13),
+                text(format!(
+                    "{} bytes",
+                    resp.body.len()
+                ))
+                .size(13),
             ]
-            .spacing(10)
+            .spacing(12)
+            .align_y(iced::Center)
             .into()
         } else {
-            container("").into()
+            container(text("No response yet").size(13))
+                .padding([3, 0])
+                .into()
         };
 
         column![
+            container(text("Response").size(12)).padding(Padding::new(0.0).bottom(2.0)),
             status_line,
             text_editor(&self.content)
                 .placeholder("Response will appear here...")
@@ -75,7 +98,7 @@ impl ResponseViewer {
                 .highlight("json", iced::highlighter::Theme::SolarizedDark)
                 .on_action(Message::EditorAction),
         ]
-        .spacing(5)
+        .spacing(6)
         .width(Length::Fill)
         .height(Length::Fill)
         .into()

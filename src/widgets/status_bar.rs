@@ -5,9 +5,9 @@ pub fn status_bar<'a, Message: Clone + 'a>(
     message: impl text::IntoFragment<'a>,
 ) -> Element<'a, Message> {
     container(
-        row![text("Message"), text(message)]
-            .spacing(5)
-            .padding(5),
+        row![text(message).size(12)]
+            .spacing(6)
+            .padding([4, 12]),
     )
     .style(|theme: &iced::Theme| {
         let palette = theme.extended_palette();

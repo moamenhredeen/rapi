@@ -4,8 +4,8 @@ use crate::widgets::key_value_editor::{self, KeyValueEditor};
 use crate::widgets::response_viewer::{self, ResponseViewer};
 use crate::widgets::tab_bar;
 use crate::widgets::url_bar::{self, UrlBar};
-use iced::widget::{column, progress_bar, row};
-use iced::{Element, Length, Task};
+use iced::widget::{column, container, horizontal_rule, progress_bar, row, text};
+use iced::{Element, Length, Padding, Task};
 
 pub struct HomeScreen {
     url_bar: UrlBar,
@@ -114,30 +114,41 @@ impl HomeScreen {
         };
 
         let progress = if self.loading {
-            progress_bar(0.0..=100.0, 100.0).height(3)
+            progress_bar(0.0..=100.0, 100.0).height(2)
         } else {
-            progress_bar(0.0..=100.0, 0.0).height(3)
+            progress_bar(0.0..=100.0, 0.0).height(2)
         };
 
         column![
             progress,
-            self.url_bar.view().map(Message::UrlBar),
+            container(self.url_bar.view().map(Message::UrlBar))
+                .padding(Padding::new(0.0).top(12.0).bottom(8.0).left(16.0).right(16.0)),
+            container(horizontal_rule(1)).padding([0, 16]),
             row![
                 column![
+                    container(text("Request").size(12)).padding(Padding::new(0.0).bottom(4.0)),
                     tab_bar::tab_bar(tabs, &self.selected_request_tab, |t| {
                         Message::SelectRequestTab(t)
                     }),
-                    request_tab_content,
+                    container(request_tab_content)
+                        .padding(Padding::new(0.0).top(8.0))
+                        .height(Length::Fill),
                 ]
                 .width(Length::FillPortion(1))
-                .height(Length::Fill),
-                self.response_viewer.view().map(Message::Response),
+                .height(Length::Fill)
+                .padding(Padding::new(0.0).right(8.0).left(16.0)),
+                container(
+                    self.response_viewer.view().map(Message::Response),
+                )
+                .width(Length::FillPortion(1))
+                .height(Length::Fill)
+                .padding(Padding::new(0.0).left(8.0).right(16.0)),
             ]
-            .spacing(10)
-            .height(Length::Fill),
+            .spacing(0)
+            .height(Length::Fill)
+            .padding(Padding::new(0.0).top(8.0).bottom(12.0)),
         ]
-        .spacing(10)
-        .padding(10)
+        .spacing(0)
         .into()
     }
 }

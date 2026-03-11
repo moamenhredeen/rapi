@@ -29,6 +29,7 @@ pub fn header<'a, Message: Clone + 'a>(
     .into()
 }
 
+#[allow(dead_code)]
 pub fn item<'a, Message: Clone + 'a>(
     content: impl Into<Element<'a, Message>>,
     is_active: bool,

@@ -1,16 +1,19 @@
+use crate::screens::environments_screen;
+use crate::screens::environments_screen::EnvironmentsScreen;
 use crate::screens::home_screen;
 use crate::screens::home_screen::HomeScreen;
 use crate::screens::route::Route;
 use crate::screens::settings_screen;
 use crate::screens::settings_screen::SettingsScreen;
-use crate::widgets::side_bar;
+use crate::widgets::activity_bar::{self, ActivityBarItem};
 use crate::widgets::status_bar;
-use iced::widget::{column, container, row, text};
+use iced::widget::{column, container, row};
 use iced::{Element, Length, Task};
 
 pub struct AppScreen {
     route: Route,
-    home: HomeScreen,
+    collections: HomeScreen,
+    environments: EnvironmentsScreen,
     settings: SettingsScreen,
     status_message: String,
 }
@@ -18,15 +21,17 @@ pub struct AppScreen {
 #[derive(Debug, Clone)]
 pub enum Message {
     Navigate(Route),
-    Home(home_screen::Message),
+    Collections(home_screen::Message),
+    Environments(environments_screen::Message),
     Settings(settings_screen::Message),
 }
 
 impl Default for AppScreen {
     fn default() -> Self {
         Self {
-            route: Route::Home,
-            home: HomeScreen::default(),
+            route: Route::Collections,
+            collections: HomeScreen::default(),
+            environments: EnvironmentsScreen::default(),
             settings: SettingsScreen::default(),
             status_message: "Ready".to_string(),
         }
@@ -40,7 +45,14 @@ impl AppScreen {
                 self.route = route;
                 Task::none()
             }
-            Message::Home(msg) => self.home.update(msg).map(Message::Home),
+            Message::Collections(msg) => {
+                let task = self.collections.update(msg);
+                task.map(Message::Collections)
+            }
+            Message::Environments(msg) => {
+                self.environments.update(msg);
+                Task::none()
+            }
             Message::Settings(msg) => {
                 self.settings.update(msg);
                 Task::none()
@@ -49,44 +61,37 @@ impl AppScreen {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        let sidebar_items = vec![
-            ("Home", Route::Home),
-            ("Settings", Route::Settings),
+        let nav_items = vec![
+            ActivityBarItem {
+                route: Route::Collections,
+                icon: "📦",
+                label: "Collections",
+            },
+            ActivityBarItem {
+                route: Route::Environments,
+                icon: "🌍",
+                label: "Environments",
+            },
+            ActivityBarItem {
+                route: Route::Settings,
+                icon: "⚙",
+                label: "Settings",
+            },
         ];
 
-        let sidebar: Element<'_, Message> = {
-            let items: Vec<Element<'_, Message>> = sidebar_items
-                .into_iter()
-                .map(|(label, route)| {
-                    let is_active = self.route == route;
-                    side_bar::item(text(label), is_active, move || {
-                        Message::Navigate(route.clone())
-                    })
-                })
-                .collect();
-
-            container(column(items).spacing(5).padding(10))
-                .width(200)
-                .height(Length::Fill)
-                .style(|theme: &iced::Theme| {
-                    let palette = theme.extended_palette();
-                    container::background(palette.background.weak.color)
-                })
-                .into()
-        };
-
         let content: Element<'_, Message> = match self.route {
-            Route::Home => self.home.view().map(Message::Home),
+            Route::Collections => self.collections.view().map(Message::Collections),
+            Route::Environments => self.environments.view().map(Message::Environments),
             Route::Settings => self.settings.view().map(Message::Settings),
         };
 
         column![
             row![
-                sidebar,
+                activity_bar::activity_bar(nav_items, &self.route, Message::Navigate),
                 container(content)
                     .width(Length::Fill)
                     .height(Length::Fill)
-                    .padding(10),
+                    .padding(0),
             ]
             .height(Length::Fill),
             status_bar::status_bar(&self.status_message),

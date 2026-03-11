@@ -1,6 +1,7 @@
 use iced::widget::{button, column, row, text, text_input};
-use iced::{Element, Length};
+use iced::{border, Element, Length};
 
+#[derive(Debug, Clone)]
 pub struct KeyValueEditor {
     pub entries: Vec<(String, String)>,
 }
@@ -54,24 +55,38 @@ impl KeyValueEditor {
                 row![
                     text_input("Key", key)
                         .on_input(move |k| Message::UpdateKey(idx, k))
-                        .width(Length::FillPortion(1)),
+                        .width(Length::FillPortion(1))
+                        .size(13),
                     text_input("Value", value)
                         .on_input(move |v| Message::UpdateValue(idx, v))
-                        .width(Length::FillPortion(1)),
-                    button(text("✕"))
+                        .width(Length::FillPortion(1))
+                        .size(13),
+                    button(text("✕").size(12).center().width(Length::Fill))
+                        .width(28)
+                        .height(28)
                         .on_press(Message::Remove(idx))
-                        .style(button::danger),
+                        .style(|theme: &iced::Theme, status| {
+                            let palette = theme.extended_palette();
+                            button::Style {
+                                background: None,
+                                text_color: palette.danger.base.color,
+                                border: border::rounded(4),
+                                ..button::text(theme, status)
+                            }
+                        }),
                 ]
-                .spacing(5)
+                .spacing(6)
+                .align_y(iced::Center)
                 .into()
             })
             .collect();
 
-        let mut col = column(rows).spacing(5);
+        let mut col = column(rows).spacing(4);
         col = col.push(
-            button("+ Add")
+            button(text("+ Add").size(13))
                 .on_press(Message::Add)
-                .style(button::secondary),
+                .style(button::text)
+                .padding([4, 8]),
         );
 
         col.into()
